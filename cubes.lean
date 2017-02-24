@@ -2,34 +2,34 @@
 
 universes v u
 
-inductive cm (α : Type u)   | ll {}  : cm
-                            | rr {}  : cm
-                            | dim {} : α → cm
-open cm
+inductive cmonad (α : Type u)   | ll {}  : cmonad
+                            | rr {}  : cmonad
+                            | dim {} : α → cmonad
+open cmonad
 
-def cbind {α : Type u} {β : Type v} (x : cm α) (f : α → cm β) : cm β :=
+@[inline] def cbind {α : Type u} {β : Type v} (x : cmonad α) (f : α → cmonad β) : cmonad β :=
 match x with
 | ll    := ll
 | rr    := rr
 | dim x := f x
 end
 
-def cmap {α : Type u} {β : Type v} (f : α → β) (x : cm α) : cm β :=
+def cmonadap {α : Type u} {β : Type v} (f : α → β) (x : cmonad α) : cmonad β :=
 match x with
 | ll    := ll
 | rr    := rr
 | dim x := dim (f x)
 end
 
-def cret {α : Type u} (a : α) : cm α := dim a
+def cret {α : Type u} (a : α) : cmonad α := dim a
 
-instance cmonad : monad cm :=
-{ map := @cmap, bind := @cbind, ret := @cret }
+instance cmonadonad : monad cmonad :=
+{ map := @cmonadap, bind := @cbind, ret := @cret }
 
-@[inline] def cmor (α β) := α → cm β
+@[inline] def cmor (α β) := α → cmonad β
 
 /- Identity cube map -/
-def cid (α) : cmor α α := return
+@[inline] def cid (α) : cmor α α := return
 
 /- Composition of cube maps -/
 def ccomp {α β γ} (g : cmor β γ) (f : cmor α β) : cmor α γ :=
@@ -38,7 +38,33 @@ def ccomp {α β γ} (g : cmor β γ) (f : cmor α β) : cmor α γ :=
 
 infixl ` ∘c `:90 := ccomp
 
-def cid_left {α β} (f : cmor α β) : (cid β) ∘c f = f :=
-sorry -- FOLLOWS FROM MONAD LAWS!
+theorem cid_left {α β} (f : cmor α β) (x : α) : ((cid β) ∘c f) x = f x :=
+begin
+  simp[ccomp],
+  exact  match (f x) with
+         | ll    := rfl
+         | rr    := rfl
+         | dim a := rfl
+         end
+end
+
+theorem cid_right {α β} (f : cmor α β) (x : α) : (f ∘c (cid α)) x = f x :=
+begin
+  simp[ccomp],
+  exact rfl
+end
+
+theorem ccomp_assoc {α β γ δ} (f : cmor α β) (g : cmor β γ) (h : cmor γ δ) (x) :
+    ((h ∘c g) ∘c f) x = (h ∘c (g ∘c f)) x :=
+begin
+  simp[ccomp],
+  exact match (f x) with
+        | ll    := rfl
+        | rr    := rfl
+        | dim x := rfl
+        end
+end
+
+/- TODO Instantiate cmonad as internal category -/
 
 def is_strict {α β} (f : cmor α β) : Prop := ∀ a, ∃ x, f a = dim x
