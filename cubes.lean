@@ -3,11 +3,16 @@
 universes v u
 
 inductive cmonad (α : Type u)   | ll {}  : cmonad
-                            | rr {}  : cmonad
-                            | dim {} : α → cmonad
+                                | rr {}  : cmonad
+                                | dim {} : α → cmonad
 open cmonad
 
-@[inline] def cbind {α : Type u} {β : Type v} (x : cmonad α) (f : α → cmonad β) : cmonad β :=
+instance bool_to_cmonad (α : Type u) : has_coe bool (cmonad α) :=
+⟨λ b, match b with ff := ll
+                              | tt := rr
+                   end⟩
+
+@[inline] def cbind {α : Type u} {β : Type v} (x) (f : α → cmonad β) : cmonad β :=
 match x with
 | ll    := ll
 | rr    := rr
