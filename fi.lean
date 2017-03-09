@@ -32,6 +32,13 @@ def deg : Π {n}, fi (n + 1) → fi n → fi (n + 1)
 | (_ + 1) (suc i) fi.zero := fi.zero
 | (_ + 1) (suc i) (suc j) := suc (deg i j)
 
+def lift {n k} : Π m,  (fi n → fi k) → fi (n + m) → fi (k + m) :=
+begin
+    intros m f i, induction m with m ih_m, exact f i,
+    cases i with n n i, exact fi.zero,
+    exact fi.suc (ih_m i)
+end
+
 end fi
 
 

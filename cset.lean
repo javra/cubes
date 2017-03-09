@@ -1,12 +1,16 @@
 /- CUBICAL SETS -/
 import .cubes
+import .fi
+import .cubes_fin
 universes u v
+
+open cmonad
 
 /- Cubical Sets -/
 structure cset {base : Type u} {fam : base → Type v} :=
     (obj        : base → Type)
     (mor        : Π {m n} (f : cmor (fam m) (fam n)), obj m → obj n)
-    (id    : Π {m} u, mor (cid (fam m)) u = u)
+    (id    : Π {m} u, mor (@dim (fam m)) u = u)
     (comp  : Π {m n o : base} {f : cmor (fam m) (fam n)} {g : cmor (fam n) (fam o)} u,
          mor (ccomp g f) u = mor g (mor f u))
 
@@ -33,3 +37,13 @@ def rep_cset {base : Type u} {fam : base → Type} (k : base) :=
         mor := λ m n f u, f ∘c u,
         id := λ m u, begin apply funext, intro x, apply cid_left end,
         comp := λ m n o f g u, begin apply funext, intro x, apply ccomp_assoc end }
+
+def fcset := @cset ℕ fi
+
+def path_cset (X : fcset) : fcset :=
+{cset . obj := λ m, X^.obj (m + 1),
+        mor := λ m n f u, X^.mor (clift 1 f) u,
+        id := λ m u, begin 
+        
+                end,
+        comp := λ m n o f g u, _ }
