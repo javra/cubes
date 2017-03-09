@@ -1,6 +1,10 @@
 A Formalization of Cubical Sets in Lean
 =======================================
 
+Preliminaries:
+
+* [fi](fi.lean): The inductive family of finite ordinal types
+
 Basics of cubical sets:
 
 * [cubes](cubes.lean): The cube category for arbitrary name systems

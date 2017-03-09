@@ -1,43 +1,31 @@
-/- THE CUBE CATEGORY ON FINITE SETS -/
+/- THE CUBE CATEGORY ON fiITE SETS -/
 import .cubes
+import .fi
 
-open cmonad fin nat
+open cmonad fi nat
 
 universes u v
 
-def cfin (n : ℕ) := cmonad (fin n)
+def cfi (n : ℕ) := cmonad (fi n)
 
 /- Projecting at the i-th dimension -/
 -- TODO generalize this to arbitrary elementary surjections?
-def cproj : Π {m}, bool → fin (m + 1) → cmor (fin (m + 1)) (fin m)
-| 0       b _                 _                 := b
-| (m + 1) b (mk 0 _)          (mk 0 _)          := b
-| (m + 1) b (mk 0 _)          (mk (l + 1) l_lt) := dim $ mk l (lt_of_succ_lt_succ l_lt)
-| (m + 1) b (mk (i + 1) i_lt) (mk 0 z_lt)       := dim $ mk 0 (zero_lt_succ _)
-| (m + 1) b (mk (i + 1) i_lt) (mk (l + 1) l_lt) := 
-    do (mk x x_lt) <- cproj b (mk i (lt_of_succ_lt_succ i_lt)) (mk l (lt_of_succ_lt_succ l_lt)),
-       return (mk (x + 1) (succ_lt_succ x_lt))
+def cproj (b : bool) : Π {m}, fi (m + 1) → cmor (fi (m + 1)) (fi m)
+| m       fi.zero fi.zero := b
+| (m + 1) fi.zero (suc j) := dim j
+| (m + 1) (suc i) fi.zero := dim fi.zero
+| (m + 1) (suc i) (suc j) := do x <- cproj i j,
+                                return $ suc x
 
-/- Degenerating at the i-th dimenion -/
-def cdeg : Π {m}, fin (m + 1) → cmor (fin m) (fin (m + 1))
-| m       (mk 0 _)          (mk l l_lt)       := dim $ mk (l + 1) (succ_lt_succ l_lt)
-| m       (mk (i + 1) _)    (mk 0 _)          := dim $ mk 0 (zero_lt_succ _)
-| 0       _                 (mk l l_lt)       := dim $ mk (l + 1) (succ_lt_succ l_lt)
-| (m + 1) (mk (i + 1) i_lt) (mk (l + 1) l_lt) :=
-    do (mk x x_lt) <- @cdeg _ (mk i (lt_of_succ_lt_succ i_lt)) (mk l (lt_of_succ_lt_succ l_lt)),
-       return (mk (x + 1) (succ_lt_succ x_lt))
+def cdeg {m} (i : fi (m + 1)) : cmor (fi m) (fi (m + 1)) := dim ∘ deg i
 
-set_option pp.implicit true
-theorem cproj_of_cdeg {m} {b : bool} (k : fin (m + 1)) : cproj b k ∘c cdeg k = cid _ :=
+theorem cproj_cdeg {m} {b : bool} (i : fi (m + 1)) : cproj b i ∘c cdeg i = dim :=
 begin
-  apply funext, intros, cases x with x x_lt, --simp[cid,ccomp,cdeg],
-  induction m with m IHm,
-  { cases k with k k_lt, induction k with k IHk, apply absurd x_lt, apply not_lt_zero,
-    simp[cid], apply absurd (lt_of_succ_lt_succ k_lt), apply not_lt_zero },
-  { cases k with k k_lt, induction k with k IHk, 
-    { cases x, reflexivity, reflexivity },
-    { cases x with x x_lt, reflexivity, simp[cid, cproj, cdeg], unfold cdeg, } }
-    
+  apply funext, intro j, change (_ ∘c dim) _ = _, rw cid_right,
+  cases i with n n i,
+  { induction j with n n j ih_j, reflexivity, reflexivity },
+  { induction j with n n j ih_j, reflexivity, 
+    simp[deg, cproj], cases i, 
+    { cases j, reflexivity, reflexivity },
+    { rw ih_j, reflexivity } }
 end
-
---def cproj_succ_comm {m} {b c : bool} (k : fin (m + 2))

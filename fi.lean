@@ -20,14 +20,17 @@ def raise {m} : Π n, fi m → fi (m + n)
 -- TODO: Instantiate as numeral
 
 def inject : Π {n}, fi n → fi (n + 1)
-| (n + 1) fi.zero := fi.zero
-| (n + 1) (suc i) := suc (inject i)
+| (_ + 1) fi.zero := fi.zero
+| (_ + 1) (suc i) := suc (inject i)
 
-def deg : Π {n} (i : fi (n + 1)), fi n → fi (n + 1)
-| (n + 1) fi.zero fi.zero := suc (fi.zero)
-| (n + 1) (suc i) fi.zero := fi.zero
-| (n + 1) (suc i) (suc j) := suc (deg i j)
-| (n + 1) fi.zero (suc j) := inject (inject j)
+def suc_inject_comm : Π {n} {i : fi n}, suc (inject i) = inject (suc i)
+| (_ + 1) fi.zero := rfl
+| (_ + 1) (suc i) := rfl
+
+def deg : Π {n}, fi (n + 1) → fi n → fi (n + 1)
+| (_ + 1) fi.zero j       := suc j
+| (_ + 1) (suc i) fi.zero := fi.zero
+| (_ + 1) (suc i) (suc j) := suc (deg i j)
 
 end fi
 

@@ -19,22 +19,19 @@ match x with
 | dim x := f x
 end
 
-def cmonadap {α : Type u} {β : Type v} (f : α → β) (x : cmonad α) : cmonad β :=
+def cmap {α : Type u} {β : Type v} (f : α → β) (x : cmonad α) : cmonad β :=
 match x with
 | ll    := ll
 | rr    := rr
 | dim x := dim (f x)
 end
 
-def cret {α : Type u} (a : α) : cmonad α := dim a
-
-instance cmonadonad : monad cmonad :=
-{ map := @cmonadap, bind := @cbind, ret := @cret }
+instance inst_cmonad : monad cmonad :=
+{ map := @cmap, bind := @cbind, ret := @dim }
 
 @[inline] def cmor (α β) := α → cmonad β
 
-/- Identity cube map -/
-@[inline] def cid (α) : cmor α α := return
+/- The identity cube map is just return is just dim -/
 
 /- Composition of cube maps -/
 def ccomp {α β γ} (g : cmor β γ) (f : cmor α β) : cmor α γ :=
@@ -43,7 +40,8 @@ def ccomp {α β γ} (g : cmor β γ) (f : cmor α β) : cmor α γ :=
 
 infixl ` ∘c `:90 := ccomp
 
-theorem cid_left {α β} (f : cmor α β) (x : α) : ((cid β) ∘c f) x = f x :=
+/- The monad laws for cmonad -/
+theorem cid_left {α β} (f : cmor α β) (x : α) : (dim ∘c f) x = f x :=
 begin
   simp[ccomp],
   exact  match (f x) with
@@ -53,7 +51,7 @@ begin
          end
 end
 
-theorem cid_right {α β} (f : cmor α β) (x : α) : (f ∘c (cid α)) x = f x :=
+theorem cid_right {α β} (f : cmor α β) (x : α) : (f ∘c dim) x = f x :=
 begin
   simp[ccomp],
   exact rfl
