@@ -30,22 +30,26 @@ begin
     { rw ih_j, reflexivity } }
 end
 
-def clift {n k} : Π m (f : cmor (fi n) (fi k)), cmor (fi (n + m)) (fi (k + m)) :=
+/- Lift a cubical morphism by 1 -/
+-- TODO generalize this
+def clift {n k} (f : cmor (fi n) (fi k)) : cmor (fi (succ n)) (fi (succ k))
+| fi.zero := dim fi.zero
+| (suc i) := do x <- f i,
+                return $ suc x
+
+theorem clift_suc {n k} (f : cmor (fi n) (fi k)) (i : fi n) :
+    clift f (suc i) = (f i >>= (return ∘ suc)) :=
+by reflexivity
+
+theorem clift_dim {n : ℕ} : clift (@dim (fi n)) = dim :=
 begin
-  intros m f i,
-  induction m with m ih_m, exact f i,
-  cases i with n n i, exact dim fi.zero,
-  exact ((ih_m i) >>= (λ x, (return $ suc x)))
+  apply funext, intro i, cases i, repeat {reflexivity},
 end
 
-theorem clift_foo : clift 5 (@dim (fi 3)) = dim :=
+theorem clift_ccomp {m n o : ℕ} (f : cmor (fi m) (fi n)) (g : cmor (fi n) (fi o)) :
+  clift (g ∘c f) = (clift g) ∘c (clift f) :=
 begin
-  apply funext, intro x, simp[clift], delta id_locked,
-end
-
-theorem clift_dim {m n : ℕ} : clift m (@dim (fi n)) = dim :=
-begin
-  induction m with m ih_m, reflexivity,
   apply funext, intro i, cases i with n n i, reflexivity,
-  
+  simp[clift,ccomp], cases (f i) with j, reflexivity, reflexivity,
+  change (g j >>= _) = clift _ _, rw clift_suc,
 end

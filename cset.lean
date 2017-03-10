@@ -40,10 +40,10 @@ def rep_cset {base : Type u} {fam : base → Type} (k : base) :=
 
 def fcset := @cset ℕ fi
 
+/- The path cubical set. The "new" dimension is represented by fi.zero -/
 def path_cset (X : fcset) : fcset :=
 {cset . obj := λ m, X^.obj (m + 1),
-        mor := λ m n f u, X^.mor (clift 1 f) u,
-        id := λ m u, begin 
-        
-                end,
-        comp := λ m n o f g u, _ }
+        mor := λ m n f u, X^.mor (clift f) u,
+        id := λ m u, by rw clift_dim; apply X^.id,
+        comp := λ m n o f g u, by rw clift_ccomp; apply X^.comp }
+
