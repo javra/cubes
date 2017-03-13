@@ -72,8 +72,8 @@ begin
   simp[ccomp, clift], rw [cproj_self, cbind_bool, cbind_dim, cproj_self],
   { cases m, simp[ccomp], cases i,
     simp[ccomp, cproj, clift], rw [cbind_dim, cbind_assoc], 
-    cases f i, reflexivity, reflexivity, rw cbind_dim, rw cbind_dim, 
-    cases n, cases a, reflexivity }
+    cases f i with j, reflexivity, reflexivity, rw cbind_dim, rw cbind_dim, 
+    cases n, cases j, reflexivity }
 end
 
 def zero_deg {m : ℕ} : cmor (fi 0) (fi m) := λ i, match i with

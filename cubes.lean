@@ -31,7 +31,7 @@ match x with
 end
 
 instance inst_cmonad : monad cmonad :=
-{ map := @cmap, bind := @cbind, ret := @dim }
+{ monad . pure := @dim, bind := @cbind }
 
 theorem cbind_bool {α β : Type u} (b : bool) (f : cmor α β) : (↑b >>= f) = ↑b :=
 by cases b; reflexivity; reflexivity; reflexivity
@@ -41,7 +41,10 @@ rfl
 
 theorem cbind_assoc {α β γ : Type u} (a : cmonad α) (f : cmor α β) (g : cmor β γ) :
   ((a >>= f) >>= g) = (a >>= (λ x, f x >>= g)) :=
-sorry
+begin
+ cases a with i, reflexivity, reflexivity,
+ rw [cbind_dim, cbind_dim], 
+end
 
 /- The identity cube map is just return is just dim -/
 
