@@ -15,7 +15,17 @@ def cproj (b : bool) : Π {m}, fi (m + 1) → cmor (fi (m + 1)) (fi m)
 | (m + 1) fi.zero (suc j) := dim j
 | (m + 1) (suc i) fi.zero := dim fi.zero
 | (m + 1) (suc i) (suc j) := do x <- cproj i j,
-                                return $ suc x
+                                dim $ suc x
+
+--TODO simplify this
+theorem cproj_self (b : bool) {m} (i : fi (m + 1)) : cproj b i i = b :=
+begin
+  cases i with n n i,
+  { cases m, repeat {reflexivity} },
+  { induction i with n n i ih_i, simp[cproj], 
+    { cases n, repeat {simp[cproj], rw cbind_bool} },
+    { simp[cproj], rw [ih_i, cbind_bool] } }
+end
 
 def cdeg {m} (i : fi (m + 1)) : cmor (fi m) (fi (m + 1)) := dim ∘ deg i
 
@@ -35,10 +45,10 @@ end
 def clift {n k} (f : cmor (fi n) (fi k)) : cmor (fi (succ n)) (fi (succ k))
 | fi.zero := dim fi.zero
 | (suc i) := do x <- f i,
-                return $ suc x
+                dim $ suc x
 
 theorem clift_suc {n k} (f : cmor (fi n) (fi k)) (i : fi n) :
-    clift f (suc i) = (f i >>= (return ∘ suc)) :=
+    clift f (suc i) = (f i >>= (dim ∘ suc)) :=
 by reflexivity
 
 theorem clift_dim {n : ℕ} : clift (@dim (fi n)) = dim :=
@@ -53,3 +63,18 @@ begin
   simp[clift,ccomp], cases (f i) with j, reflexivity, reflexivity,
   change (g j >>= _) = clift _ _, rw clift_suc,
 end
+
+--TODO generalize to arbitrary projections
+theorem cproj_clift {m n : ℕ} (f : cmor (fi m) (fi n)) (b : bool) :
+  (cproj b fi.zero) ∘c (clift f) = f ∘c (cproj b fi.zero) :=
+begin
+  apply funext, intro i, cases i with n n i,
+  simp[ccomp, clift], rw [cproj_self, cbind_bool, cbind_dim, cproj_self],
+  { cases m, simp[ccomp], cases i,
+    simp[ccomp, cproj, clift], rw [cbind_dim, cbind_assoc], 
+    cases f i, reflexivity, reflexivity, rw cbind_dim, rw cbind_dim, 
+    cases n, cases a, reflexivity }
+end
+
+def zero_deg {m : ℕ} : cmor (fi 0) (fi m) := λ i, match i with
+                                                  end

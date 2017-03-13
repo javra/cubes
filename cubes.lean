@@ -7,12 +7,16 @@ inductive cmonad (α : Type u)   | ll {}  : cmonad
                                 | dim {} : α → cmonad
 open cmonad
 
-instance bool_to_cmonad (α : Type u) : has_coe bool (cmonad α) :=
-⟨λ b, match b with ff := ll
-                              | tt := rr
-                   end⟩
+def bool_to_cmonad {α : Type u} : bool → cmonad α
+| ff := ll
+| tt := rr
 
-@[inline] def cbind {α : Type u} {β : Type v} (x) (f : α → cmonad β) : cmonad β :=
+instance inst_bool_to_cmonad (α : Type u) : has_coe bool (cmonad α) :=
+⟨ bool_to_cmonad ⟩
+
+@[inline] def cmor (α β) := α → cmonad β
+
+@[inline] def cbind {α : Type u} {β : Type v} (x) (f : cmor α β) : cmonad β :=
 match x with
 | ll    := ll
 | rr    := rr
@@ -29,7 +33,15 @@ end
 instance inst_cmonad : monad cmonad :=
 { map := @cmap, bind := @cbind, ret := @dim }
 
-@[inline] def cmor (α β) := α → cmonad β
+theorem cbind_bool {α β : Type u} (b : bool) (f : cmor α β) : (↑b >>= f) = ↑b :=
+by cases b; reflexivity; reflexivity; reflexivity
+
+theorem cbind_dim {α β : Type u} (a : α) (f : cmor α β) : (dim a >>= f) = f a :=
+rfl
+
+theorem cbind_assoc {α β γ : Type u} (a : cmonad α) (f : cmor α β) (g : cmor β γ) :
+  ((a >>= f) >>= g) = (a >>= (λ x, f x >>= g)) :=
+sorry
 
 /- The identity cube map is just return is just dim -/
 

@@ -12,7 +12,7 @@ structure cset {base : Type u} {fam : base → Type v} :=
     (mor        : Π {m n} (f : cmor (fam m) (fam n)), obj m → obj n)
     (id    : Π {m} u, mor (@dim (fam m)) u = u)
     (comp  : Π {m n o : base} {f : cmor (fam m) (fam n)} {g : cmor (fam n) (fam o)} u,
-         mor (ccomp g f) u = mor g (mor f u))
+         mor (g ∘c f) u = mor g (mor f u))
 
 /- Some common instantiations of base and fam -/
 check @cset.mk Type list
@@ -41,9 +41,32 @@ def rep_cset {base : Type u} {fam : base → Type} (k : base) :=
 def fcset := @cset ℕ fi
 
 /- The path cubical set. The "new" dimension is represented by fi.zero -/
-def path_cset (X : fcset) : fcset :=
+section fcset
+variables (X : fcset)
+
+def path_cset : fcset :=
 {cset . obj := λ m, X^.obj (m + 1),
         mor := λ m n f u, X^.mor (clift f) u,
         id := λ m u, by rw clift_dim; apply X^.id,
         comp := λ m n o f g u, by rw clift_ccomp; apply X^.comp }
+
+def proj {m} (u : X^.obj (m + 1)) (b : bool) := X^.mor (cproj b (@fi.zero m)) u
+
+/- The homogeneous idenity cubical set without Kan property -/
+/- This kind of corresponds to the set of paths from δ ff to δ tt -/
+-- TODO make fcset a substructure to cset
+--set_option pp.implicit true
+def id_cset (δ : bool → X^.obj 0) : fcset :=
+{cset . obj := λ m, Σ' (w : X^.obj (m + 1)), proj X w = (X^.mor zero_deg) ∘ δ, 
+        mor := λ m n f u, 
+                begin
+                        cases u with u hu,
+                        existsi X^.mor (clift f) u,
+                        apply funext, intro b, simp[proj], rw -X^.comp,
+                        
+                end, 
+        id := λ m u, _,
+        comp := λ m n o f g u, _}
+
+end fcset
 
