@@ -55,7 +55,7 @@ def proj {m} (u : X^.obj (m + 1)) (b : bool) := X^.mor (cproj b (@fi.zero m)) u
 /- The homogeneous idenity cubical set without Kan property -/
 /- This kind of corresponds to the set of paths from δ ff to δ tt -/
 -- TODO make fcset a substructure to cset
---set_option pp.implicit true
+-- TODO define sub-cubical sets
 def id_cset (δ : bool → X^.obj 0) : fcset :=
 {cset . obj := λ m, subtype (λ (w : X^.obj (m + 1)), ∀ b, proj X w b = (X^.mor zero_deg) (δ b)),
         mor := λ m n f u, begin
@@ -72,6 +72,12 @@ def id_cset (δ : bool → X^.obj 0) : fcset :=
                         cases u with u hu, apply subtype.eq, simp,
                         rw [clift_ccomp, X^.comp]
                 end}
+
+def prod_cset (X Y : fcset)  : fcset :=
+{cset . obj := λ m, X^.obj m × Y^.obj m, 
+        mor := λ m n f u, ⟨ X^.mor f u.1, Y^.mor f u.2 ⟩,
+        id := λ m u, by cases u; rw [X^.id, Y^.id],
+        comp := λ m n o f g u, by cases u; rw[X^.comp, Y^.comp] }
 
 end fcset
 
