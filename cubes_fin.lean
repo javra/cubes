@@ -78,3 +78,9 @@ end
 
 def zero_deg {m : ℕ} : cmor (fi 0) (fi m) := λ i, match i with
                                                   end
+
+theorem zero_deg_right {m n : ℕ} (f : cmor (fi m) (fi n)) :
+  f ∘c zero_deg = zero_deg :=
+begin
+  apply funext, intro i, cases i
+end

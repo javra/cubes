@@ -15,9 +15,9 @@ structure cset {base : Type u} {fam : base → Type v} :=
          mor (g ∘c f) u = mor g (mor f u))
 
 /- Some common instantiations of base and fam -/
-check @cset.mk Type list
+/-check @cset.mk Type list
 check @cset.mk ℕ fin
-check @cset.mk unit (λ _, Type)
+check @cset.mk unit (λ _, Type)-/
 
 /- Maps between cubical sets -/
 structure cset_mor {base : Type u} {fam : base → Type v} (X Y : @cset base fam) :=
@@ -57,16 +57,21 @@ def proj {m} (u : X^.obj (m + 1)) (b : bool) := X^.mor (cproj b (@fi.zero m)) u
 -- TODO make fcset a substructure to cset
 --set_option pp.implicit true
 def id_cset (δ : bool → X^.obj 0) : fcset :=
-{cset . obj := λ m, Σ' (w : X^.obj (m + 1)), proj X w = (X^.mor zero_deg) ∘ δ, 
-        mor := λ m n f u, 
-                begin
-                        cases u with u hu,
-                        existsi X^.mor (clift f) u,
-                        apply funext, intro b, simp[proj], rw -X^.comp,
-                        
-                end, 
-        id := λ m u, _,
-        comp := λ m n o f g u, _}
+{cset . obj := λ m, subtype (λ (w : X^.obj (m + 1)), ∀ b, proj X w b = (X^.mor zero_deg) (δ b)),
+        mor := λ m n f u, begin
+                        cases u with u hu, existsi X^.mor (clift f) u,
+                        intro b, simp[proj], rw -X^.comp,
+                        rw [cproj_clift, X^.comp], delta proj at hu,
+                        rw [hu, -X^.comp, zero_deg_right],
+                end,
+        id := λ m u, begin
+                        cases u with u hu, apply subtype.eq,
+                        simp, rw [clift_dim, X^.id],
+                end,
+        comp := λ m n o f g u, begin
+                        cases u with u hu, apply subtype.eq, simp,
+                        rw [clift_ccomp, X^.comp]
+                end}
 
 end fcset
 
