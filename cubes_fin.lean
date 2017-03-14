@@ -1,6 +1,5 @@
 /- THE CUBE CATEGORY ON fiITE SETS -/
-import .cubes
-import .fi
+import .cubes .fi
 
 open cmonad fi nat
 

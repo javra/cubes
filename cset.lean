@@ -41,7 +41,7 @@ def rep_cset {base : Type u} {fam : base → Type} (k : base) :=
 def fcset := @cset ℕ fi
 
 /- The path cubical set. The "new" dimension is represented by fi.zero -/
-section fcset
+namespace fcset
 variables (X : fcset)
 
 def path_cset : fcset :=
@@ -50,18 +50,20 @@ def path_cset : fcset :=
         id := λ m u, by rw clift_dim; apply X^.id,
         comp := λ m n o f g u, by rw clift_ccomp; apply X^.comp }
 
-def proj {m} (u : X^.obj (m + 1)) (b : bool) := X^.mor (cproj b (@fi.zero m)) u
+def proj {m} (i : fi (m + 1)) (b : bool) (u : X^.obj (m + 1))  := X^.mor (cproj b i) u
+
+def zproj {m} := X^.proj (@fi.zero m)
 
 /- The homogeneous idenity cubical set without Kan property -/
 /- This kind of corresponds to the set of paths from δ ff to δ tt -/
 -- TODO make fcset a substructure to cset
 -- TODO define sub-cubical sets
 def id_cset (δ : bool → X^.obj 0) : fcset :=
-{cset . obj := λ m, subtype (λ (w : X^.obj (m + 1)), ∀ b, proj X w b = (X^.mor zero_deg) (δ b)),
+{cset . obj := λ m, subtype (λ (w : X^.obj (m + 1)), ∀ b, X^.proj fi.zero b w = (X^.mor zero_deg) (δ b)),
         mor := λ m n f u, begin
                         cases u with u hu, existsi X^.mor (clift f) u,
-                        intro b, simp[proj], rw -X^.comp,
-                        rw [cproj_clift, X^.comp], delta proj at hu,
+                        intro b, simp[zproj, proj], rw -X^.comp,
+                        rw [cproj_clift, X^.comp], delta zproj at hu, delta proj at hu,
                         rw [hu, -X^.comp, zero_deg_right],
                 end,
         id := λ m u, begin
@@ -71,7 +73,7 @@ def id_cset (δ : bool → X^.obj 0) : fcset :=
         comp := λ m n o f g u, begin
                         cases u with u hu, apply subtype.eq, simp,
                         rw [clift_ccomp, X^.comp]
-                end}
+                end }
 
 def prod_cset (X Y : fcset)  : fcset :=
 {cset . obj := λ m, X^.obj m × Y^.obj m, 
@@ -79,5 +81,12 @@ def prod_cset (X Y : fcset)  : fcset :=
         id := λ m u, by cases u; rw [X^.id, Y^.id],
         comp := λ m n o f g u, by cases u; rw[X^.comp, Y^.comp] }
 
-end fcset
+/- A pair of m-cubes in two cubical sets is called separated they
+   are non-degenerate on disjoint sets of dimensions. -/
+/- The separate product of cubical sets does not form a cubical set
+   without injectivity in the base category. -/
+/-def isseparated {X Y : fcset} {m} (u : X^.obj m) (v : Y^.obj m) :=
+sorry
+-/
 
+end fcset
